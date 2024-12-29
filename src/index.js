@@ -5,17 +5,34 @@ const { loadEvents } = require('./handlers/eventHandler.js');
 const { loadSlashCommands } = require('./handlers/slashCommandHandler.js');
 const { loadPrefixCommands } = require('./handlers/prefixCommandHandler.js');
 const { loadButtons } = require('./handlers/buttonHandler.js');
+const listenerManager = require('./utils/listenerManager');
 const { setupAntiCrash } = require('./handlers/antiCrashHandler.js');
 const chalk = require('chalk');
 
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers
-    ]
-});
+// Intents & Partials //
+
+const { intents, partials } = require('./utils/intents.js');
+
+
+let client;
+try {
+    client = new Client({ 
+      intents: [ ...intents],
+      partials: [ ...partials ],
+    }); 
+} catch (error) {
+    console.error(`${color.red}[${getTimestamp()}]${color.reset} [ERROR] Error en la creación del cliente. \n${color.red}[${getTimestamp()}]${color.reset} [ERROR]`, error);
+};
+
+client.logs = require('./utils/logs');
+client.config = require('./config');
+
+// Packages //
+
+const auditLogsClient = require('./client/auditLogsClientEvent.js')
+
+require('./handlers/processHandlers')();
+
 
 client.slashCommands = new Collection();
 client.prefixCommands = new Collection();
@@ -36,6 +53,7 @@ async function initializeBot() {
         const slashStats = await loadSlashCommands(client);
         const prefixStats = await loadPrefixCommands(client);
         const buttonStats = await loadButtons(client);
+        auditLogsClient(client);
 
         await client.login(process.env.token);
 
@@ -45,6 +63,18 @@ async function initializeBot() {
         console.log(`   ✓ Comandos Prefix: ${prefixStats.success}/${prefixStats.total}`);
         console.log(`   ✓ Botones: ${buttonStats.success}/${buttonStats.total}`);
         console.log('\n╚═══════════════════════════════════════════╝');
+
+        client.on('ready', () => {
+            listenerManager.initialize(client);
+          
+          
+          client.on('messageCreate', async (message) => {
+            
+            if (message.channel.type === 'DM' && !message.author) {
+              await handleDM(message);
+            }
+          });
+          });
 
     } catch (error) {
         console.error(chalk.red('Error al inicializar el bot:'), error);
