@@ -3,6 +3,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
+chalk.level = 1;
 
 module.exports = {
     name: 'ready',
@@ -11,40 +12,49 @@ module.exports = {
         try {
             console.log(chalk.yellow('Registrando comandos slash...'));
             
-            const rest = new REST().setToken(process.env.token);
+            const rest = new REST({ version: '10' }).setToken(process.env.token);
             const commands = [];
             
-            // Leer comandos slash
             const commandsPath = path.join(__dirname, '../../commands/slash');
             const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
-            // Primero borra los comandos existentes
-            await rest.put(
-                Routes.applicationCommands(process.env.clientid),
-                { body: [] }
-            );
-            await rest.put(
-                Routes.applicationGuildCommands(process.env.clientid, process.env.guildid),
-                { body: [] }
-            );
-
-            // Cargar nuevos comandos
             for (const file of commandFiles) {
-                const command = require(path.join(commandsPath, file));
+                const filePath = path.join(commandsPath, file);
+                delete require.cache[require.resolve(filePath)]; 
+                const command = require(filePath);
+                
                 if ('data' in command && 'execute' in command) {
                     commands.push(command.data.toJSON());
+                } else {
+                    console.log(chalk.yellow(`[ADVERTENCIA] El comando en ${file} no tiene las propiedades requeridas 'data' o 'execute'`));
                 }
             }
 
-            // Registrar comandos
-            await rest.put(
-                Routes.applicationGuildCommands(process.env.clientid, process.env.guildid),
-                { body: commands }
-            );
+            //console.log(chalk.blue(`Iniciando registro de ${commands.length} comandos...`));
+            
+            try {
+                const data = await rest.put(
+                    Routes.applicationCommands(process.env.clientid),
+                    { body: commands },
+                );
+                
+                //console.log(chalk.green(`¡${data.length} comandos registrados exitosamente!`));
+                
+                const commandsHash = JSON.stringify(commands);
+                client.commandsHash = commandsHash;
+                
+            } catch (error) {
+                console.error(chalk.red('Error durante el registro de comandos:'));
+                if (error.response) {
+                    console.error(chalk.red(`Estado: ${error.response.status}`));
+                    console.error(chalk.red(`Mensaje: ${error.response.data?.message || 'No hay mensaje de error'}`));
+                } else {
+                    console.error(chalk.red(error));
+                }
+            }
 
-            //console.log(chalk.green(`¡${commands.length} comandos slash registrados exitosamente!`));
         } catch (error) {
-            console.error(chalk.red('Error al registrar comandos:'), error);
+            console.error(chalk.red('Error al cargar comandos:'), error);
         }
     }
 };

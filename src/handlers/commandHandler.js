@@ -29,10 +29,13 @@ async function loadCommands(client) {
                 const command = require(filePath);
 
                 if ('data' in command && 'execute' in command) {
+
                     client.commands.set(command.data.name, command);
-                    commands.push(command.data.toJSON());
+                    commands.commandArray.push(command.data.toJSON());
+
                     console.log(chalk.green(`✓ Comando cargado: ${command.data.name}`));
                 } else {
+                    client.commandArray.push(command.data);
                     console.log(chalk.red(`✗ El comando ${file} no tiene las propiedades requeridas`));
                 }
             } catch (error) {
