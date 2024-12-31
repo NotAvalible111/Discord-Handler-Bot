@@ -1,12 +1,12 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require('discord.js');
 const { connectDatabase } = require('./database/conection.js');
 const { loadEvents } = require('./handlers/eventHandler.js');
 const { loadSlashCommands } = require('./handlers/slashCommandHandler.js');
 const { loadPrefixCommands } = require('./handlers/prefixCommandHandler.js');
 const { loadButtons } = require('./handlers/buttonHandler.js');
 const listenerManager = require('./utils/listenerManager');
-const { setupAntiCrash } = require('./handlers/antiCrashHandler.js');
+//const { setupAntiCrash } = require('./handlers/antiCrashHandler.js');
 const chalk = require('chalk');
 
 // Intents & Partials //
@@ -46,7 +46,7 @@ async function initializeBot() {
     console.log(chalk.cyan('╚════════════════════════════════════╝\n'));
 
     try {
-        setupAntiCrash();
+        //setupAntiCrash();
         await connectDatabase();
         
         const eventStats = await loadEvents(client);
@@ -66,7 +66,6 @@ async function initializeBot() {
 
         client.on('ready', () => {
             listenerManager.initialize(client);
-          
           
           client.on('messageCreate', async (message) => {
             
