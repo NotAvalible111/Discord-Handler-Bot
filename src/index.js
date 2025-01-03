@@ -6,7 +6,6 @@ const { loadSlashCommands } = require('./handlers/slashCommandHandler.js');
 const { loadPrefixCommands } = require('./handlers/prefixCommandHandler.js');
 const { loadButtons } = require('./handlers/buttonHandler.js');
 const listenerManager = require('./utils/listenerManager');
-//const { setupAntiCrash } = require('./handlers/antiCrashHandler.js');
 const chalk = require('chalk');
 
 // Intents & Partials //

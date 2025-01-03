@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
+const AsciiTable = require('ascii-table');
 
 async function connectDatabase() {
     try {
@@ -11,24 +12,46 @@ async function connectDatabase() {
             //useUnifiedTopology: true
         });
         console.log(chalk.green('¡Conexión a MongoDB establecida!\n'));
-        
-        // Cargar schemas
+
         const schemasPath = path.join(__dirname, '../schemas');
         const schemaFiles = fs.readdirSync(schemasPath).filter(file => file.endsWith('.js'));
-        
+
         console.log(chalk.yellow('Cargando schemas...'));
+        
+        const schemaTable = new AsciiTable('Estado de Carga de Schemas')
+            .setHeading('Archivo', 'Estado', 'Mensaje');
+
         for (const file of schemaFiles) {
             try {
                 require(path.join(schemasPath, file));
-                console.log(chalk.green(`✓ Schema cargado: ${file}`));
+                schemaTable.addRow(
+                    file,
+                    '✓',
+                    'Cargado exitosamente'
+                );
             } catch (error) {
-                console.log(chalk.red(`✗ Error al cargar schema ${file}:`, error));
+                schemaTable.addRow(
+                    file,
+                    '✗',
+                    `Error: ${error.message}`
+                );
             }
         }
-        console.log(chalk.green(`¡${schemaFiles.length} schemas cargados exitosamente!\n`));
-        
+
+        // Mostrar la tabla
+        console.log(schemaTable.toString());
+        console.log(chalk.green(`\n¡${schemaFiles.length} schemas procesados!\n`));
+
     } catch (error) {
-        console.error(chalk.red('Error al conectar a MongoDB:'), error);
+        const errorTable = new AsciiTable('Error de Conexión')
+            .setHeading('Tipo', 'Mensaje');
+        
+        errorTable.addRow(
+            'Error MongoDB',
+            error.message
+        );
+
+        console.log(errorTable.toString());
         process.exit(1);
     }
 }
