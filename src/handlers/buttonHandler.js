@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const AsciiTable = require('ascii-table');
-const chalk = require('chalk');
+const { color, getTimestamp } = require('../utils/loggingEffects.js');
 
 async function loadButtons(client) {
     const table = new AsciiTable('Buttons');
@@ -21,23 +21,22 @@ async function loadButtons(client) {
                 if ('id' in button && 'execute' in button) {
                     client.buttons.set(button.id, button);
                     success++;
-                    table.addRow(file, chalk.green('✓ LOADED'));
+                    table.addRow(file, '✓ LOADED');
                 } else {
-                    table.addRow(file, chalk.red('✗ MISSING PROPERTIES'));
+                    table.addRow(file, '✗ MISSING PROPERTIES');
                 }
             } catch (error) {
-                table.addRow(file, chalk.red('✗ ERROR'));
-                console.error(`Error al cargar el botón ${file}:`, error);
+                table.addRow(file, '✗ ERROR');
+                console.error(`${color.red}[${getTimestamp()}] Error al cargar el botón ${file}:`, error);
             }
         }
 
         console.log(table.toString());
-        const timestamp = new Date().toLocaleString();
-        console.log(`[${timestamp}] [BUTTONS] Loaded ${success} Buttons`);
-        console.log(chalk.blue(`Total de botones cargados: ${success}/${total}\n`));
+        console.log(`${color.green}[${getTimestamp()}] [BUTTONS] Loaded ${success} Buttons`);
+        console.log(`${color.blue}Total de botones cargados: ${success}/${total}\n`);
 
     } catch (error) {
-        console.error(chalk.red('Error al cargar los botones:'), error);
+        console.error(`${color.red}[${getTimestamp()}] Error al cargar los botones:`, error);
     }
 
     return { success, total };

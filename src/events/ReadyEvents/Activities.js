@@ -1,6 +1,6 @@
 const { Events, ActivityType } = require('discord.js');
 require('dotenv').config();
-const chalk = require('chalk');
+const { color, getTimestamp } = require('../../utils/loggingEffects.js');
 
 module.exports = {
     name: Events.ClientReady,
@@ -39,7 +39,7 @@ module.exports = {
                     });
 
                 } catch (error) {
-                    console.error(chalk.red(`[ACTIVITY] Error al establecer actividad:`, error));
+                    console.error(`${color.red}[${getTimestamp()}] [ACTIVITY] Error al establecer actividad:`, error);
                 }
 
                 currentIndex = (currentIndex + 1) % activities.length;
@@ -51,11 +51,11 @@ module.exports = {
 
             client.once('disconnect', () => {
                 clearInterval(interval);
-                console.log(chalk.yellow('[ACTIVITY] Sistema de actividades detenido'));
+                console.log(`${color.yellow}[${getTimestamp()}] [ACTIVITY] Sistema de actividades detenido`);
             });
 
         } catch (error) {
-            console.error(chalk.red(error));
+            console.error(`${color.red}[${getTimestamp()}]`, error);
         }
     }
 };

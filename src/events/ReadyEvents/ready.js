@@ -1,13 +1,13 @@
 const folderLoader = require('../../utils/folderLoader.js');
-const chalk = require('chalk');
+const { color } = require('../../utils/loggingEffects.js');
 
 module.exports = {
     name: 'ready',
     once: true,
     execute(client) {
-        console.log(chalk.green('\n╔════════════════════════════════════╗'));
-        console.log(chalk.green(`║ Bot conectado como ${client.user.tag} ║`));
-        console.log(chalk.green('╚════════════════════════════════════╝\n'));
+        console.log(`${color.torquise}\n╔═══════════════════════════════════════╗`);
+        console.log(`${color.torquise}║ Bot conectado como${client.user.tag} ║`);
+        console.log(`${color.torquise}╚═══════════════════════════════════════╝\n`);
         
         folderLoader(client);
     }

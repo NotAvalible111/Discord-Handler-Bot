@@ -2,11 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const { REST, Routes } = require('discord.js');
 const AsciiTable = require('ascii-table');
-const chalk = require('chalk');
+const { color, getTimestamp } = require('../utils/loggingEffects.js');
 
 async function loadSlashCommands(client) {
     const table = new AsciiTable('Slash Commands');
-    table.setHeading('Category', 'Command', 'Status');
+    table.setHeading('Category', 'Command', 'Status')
+    .setAlignCenter(2);
 
     const commands = [];
     let total = 0;
@@ -36,22 +37,22 @@ async function loadSlashCommands(client) {
                             table.addRow(
                                 category || 'General',
                                 file,
-                                chalk.green('✓ LOADED')
+                                `${color.green}✓ LOADED`
                             );
                         } else {
                             table.addRow(
                                 category || 'General',
                                 file,
-                                chalk.red('✗ MISSING PROPERTIES')
+                                `${color.red}✗ MISSING PROPERTIES`
                             );
                         }
                     } catch (error) {
                         table.addRow(
                             category || 'General',
                             file,
-                            chalk.red('✗ ERROR')
+                            `${color.red}✗ ERROR`
                         );
-                        console.error(`Error al cargar el comando ${file}:`, error);
+                        console.error(`${color.red}[${getTimestamp()}] Error al cargar el comando ${file}:`, error);
                     }
                 }
             }
@@ -60,7 +61,7 @@ async function loadSlashCommands(client) {
         readCommands(commandsPath);
 
         const rest = new REST().setToken(process.env.token);
-        console.log(chalk.yellow('\nRegistrando comandos slash...'));
+        console.log(`${color.green}[${getTimestamp()}]\nRegistrando comandos slash...`);
         
         await rest.put(
             Routes.applicationGuildCommands(process.env.clientid, process.env.guildid),
@@ -68,14 +69,13 @@ async function loadSlashCommands(client) {
         );
 
         console.log(table.toString());
-        console.log(chalk.blue(`Total de comandos slash cargados: ${success}/${total}`));
+        console.log(`${color.blue}[${getTimestamp()}] Total de comandos slash cargados: ${success}/${total}`);
         
-        const timestamp = new Date().toLocaleString();
-        console.log(`[${timestamp}] [COMMANDS] Loaded ${success} SlashCommands`);
-        console.log(chalk.green('¡Comandos slash registrados exitosamente!\n'));
+        console.log(`${color.green}[${getTimestamp()}] [COMMANDS] Loaded ${success} SlashCommands`);
+        console.log(`${color.green}[${getTimestamp()}] ¡Comandos slash registrados exitosamente!\n`);
         
     } catch (error) {
-        console.error(chalk.red('Error al registrar los comandos slash:'), error);
+        console.error(`${color.red}[${getTimestamp()}] Error al registrar los comandos slash:`, error);
     }
 
     return { success, total };

@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const AsciiTable = require('ascii-table');
-const chalk = require('chalk');
+const { color, getTimestamp } = require('../utils/loggingEffects.js');
 
 async function loadEvents(client) {
     const table = new AsciiTable('Events');
@@ -31,10 +31,10 @@ async function loadEvents(client) {
                         client.on(event.name, (...args) => event.execute(...args));
                     }
                     
-                    table.addRow(path.basename(fullPath), '✅ LOADED');
+                    table.addRow(path.basename(fullPath), `${color.green} ✅ LOADED`);
                     success++;
                 } catch (error) {
-                    table.addRow(path.basename(fullPath), '❌ ERROR');
+                    table.addRow(path.basename(fullPath), `${color.red} ❌ ERROR`);
                     console.error(`Error al cargar el evento ${path.basename(fullPath)}:`, error);
                 }
             }
@@ -44,9 +44,8 @@ async function loadEvents(client) {
     loadEventsRecursively(eventsPath);
 
     console.log(table.toString());
-    const timestamp = new Date().toLocaleString();
-    console.log(`[${timestamp}] [EVENTS] Se han cargado ${success} Eventos`);
-    console.log(chalk.blue(`Total de eventos cargados: ${success}/${total}\n`));
+    console.log(`${color.pink}[${getTimestamp()}] [EVENTS] Se han cargado ${success} Eventos`);
+    console.log(`${color.pink}[${getTimestamp()}] Total de eventos cargados: ${success}/${total}\n`);
 
     return { success, total };
 }

@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const AsciiTable = require('ascii-table');
-const chalk = require('chalk');
+const { color, getTimestamp } = require('../utils/loggingEffects.js');
 
 async function loadPrefixCommands(client) {
     const table = new AsciiTable('Prefix Commands');
@@ -21,7 +21,6 @@ async function loadPrefixCommands(client) {
                 const stat = fs.statSync(filePath);
                 
                 if (stat.isDirectory()) {
-
                     readCommands(filePath, file);
                 } else if (file.endsWith('.js')) {
                     total++;
@@ -33,22 +32,22 @@ async function loadPrefixCommands(client) {
                             table.addRow(
                                 category || 'General',
                                 file,
-                                chalk.green('✓ LOADED')
+                                `${color.green}✓ LOADED`
                             );
                         } else {
                             table.addRow(
                                 category || 'General',
                                 file,
-                                chalk.red('✗ MISSING PROPERTIES')
+                                `${color.red}✗ MISSING PROPERTIES`
                             );
                         }
                     } catch (error) {
                         table.addRow(
                             category || 'General',
                             file,
-                            chalk.red('✗ ERROR')
+                            `${color.red}✗ ERROR`
                         );
-                        console.error(`Error al cargar el comando ${file}:`, error);
+                        console.error(`${color.red}[${getTimestamp()}] Error al cargar el comando ${file}:`, error);
                     }
                 }
             }
@@ -57,12 +56,11 @@ async function loadPrefixCommands(client) {
         readCommands(commandsPath);
 
         console.log(table.toString());
-        const timestamp = new Date().toLocaleString();
-        console.log(`[${timestamp}] [COMMANDS] Loaded ${success} PrefixCommands`);
-        console.log(chalk.blue(`Total de comandos prefix cargados: ${success}/${total}\n`));
+        console.log(`${color.green}[${getTimestamp()}] [COMMANDS] Loaded ${success} PrefixCommands`);
+        console.log(`${color.blue}Total de comandos prefix cargados: ${success}/${total}\n`);
         
     } catch (error) {
-        console.error(chalk.red('Error al cargar los comandos prefix:'), error);
+        console.error(`${color.red}[${getTimestamp()}] Error al cargar los comandos prefix:`, error);
     }
 
     return { success, total };

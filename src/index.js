@@ -6,7 +6,7 @@ const { loadSlashCommands } = require('./handlers/slashCommandHandler.js');
 const { loadPrefixCommands } = require('./handlers/prefixCommandHandler.js');
 const { loadButtons } = require('./handlers/buttonHandler.js');
 const listenerManager = require('./utils/listenerManager');
-const chalk = require('chalk');
+const { color, getTimestamp } = require('./utils/loggingEffects.js');
 
 // Intents & Partials //
 
@@ -40,12 +40,11 @@ client.prefix = process.env.prefix || '!';
 
 async function initializeBot() {
     console.clear();
-    console.log(chalk.cyan('╔════════════════════════════════════╗'));
-    console.log(chalk.cyan('║        Iniciando el Bot...         ║'));
-    console.log(chalk.cyan('╚════════════════════════════════════╝\n'));
+    console.log(`${color.torquise} ╔════════════════════════════════════╗`);
+    console.log(`${color.torquise} ║        Iniciando el Bot...         ║`);
+    console.log(`${color.torquise} ╚════════════════════════════════════╝\n`);
 
     try {
-        //setupAntiCrash();
         await connectDatabase();
         
         const eventStats = await loadEvents(client);
@@ -75,7 +74,7 @@ async function initializeBot() {
           });
 
     } catch (error) {
-        console.error(chalk.red('Error al inicializar el bot:'), error);
+        console.error(`${color.red}[${getTimestamp()}] Error al inicializar el bot:`, error);
     }
 }
 
