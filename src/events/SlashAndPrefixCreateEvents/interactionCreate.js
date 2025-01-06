@@ -3,14 +3,28 @@ const { color, getTimestamp } = require('../../utils/loggingEffects.js');
 
 module.exports = {
     name: 'interactionCreate',
-    async execute(interaction) {
+    async execute(interaction, client) {
+
+        if (interaction.isAutocomplete()) {
+            const command = interaction.client.slashCommands.get(interaction.commandName);
+        
+            if (!command) return;
+
+            try {
+                 await command.autocomplete(interaction);
+            } catch (error) {
+            console.error(`${color.red}[${getTimestamp()}] [INTERACTION_CREATE] Error en autocompletado:`, error);
+            }
+                return;
+        }
+
         if (interaction.isChatInputCommand()) {
             
             const command = interaction.client.slashCommands.get(interaction.commandName);
             if (!command) return;
 
             try {
-                await command.execute(interaction);
+                await command.execute(interaction, client);
             } catch (error) {
                 console.error(`${color.red}[${getTimestamp()}] [INTERACTION_CREATE] Error al ejecutar el comando. \n${color.red}[${getTimestamp()}] [INTERACTION_CREATE] Por favor, verifica que estés usando el método execute correcto: "async execute(interaction, client)": \n${color.red}[${getTimestamp()}] [INTERACTION_CREATE]`, error);
 
@@ -22,7 +36,6 @@ module.exports = {
 
                 const channel = interaction.client.channels.cache.get(interaction.client.config.commandErrorChannel);
 
-                // Error embed
                 const embed = new EmbedBuilder()
                     .setColor("Blue")
                     .setTimestamp()
@@ -36,7 +49,6 @@ module.exports = {
                         { name: '> Error', value: `\`\`\`${error}\`\`\`` }
                     );
 
-                // Status buttons
                 const yellowButton = new ButtonBuilder()
                     .setCustomId('change_color_yellow_slash')
                     .setLabel('Marcar como Pendiente')
@@ -71,16 +83,32 @@ module.exports = {
         } else if (interaction.isButton()) {
             const button = interaction.client.buttons.get(interaction.customId);
             if (!button) return;
-
+        
             try {
                 await button.execute(interaction);
             } catch (error) {
-                console.error(error);
-                await interaction.reply({
-                    content: 'Hubo un error al procesar el botón.',
-                    ephemeral: true
-                });
+                console.error(`${color.red}[${getTimestamp()}] [BUTTON_ERROR]`, error);
+                
+                const errorEmbed = new EmbedBuilder()
+                    .setColor("Red")
+                    .setTitle("Error en el botón")
+                    .setDescription(`Ha ocurrido un error al procesar el botón.\nError: ${error.message || 'Desconocido'}`)
+                    .setTimestamp();
+        
+                try {
+                    if (interaction.replied || interaction.deferred) {
+                        await interaction.editReply({ embeds: [errorEmbed], ephemeral: true });
+                    } else {
+                        await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                    }
+                } catch (followUpError) {
+
+                    try {
+                        await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+                    } catch (finalError) {
+                        console.error(`${color.red}[${getTimestamp()}] [CRITICAL_BUTTON_ERROR] No se pudo enviar mensaje de error:`, finalError);
+                    }
+                }
             }
-        }
-    }
+        }}
 };
