@@ -20,7 +20,7 @@ module.exports = {
                     if (!authorPerms || !command.permissions.every(perm => authorPerms.has(perm))) {
                         return message.reply({ 
                             content: '❌ No tienes permisos para usar este comando.',
-                            ephemeral: true 
+                            flags: 64 
                         });
                     }
                 }
@@ -37,7 +37,7 @@ module.exports = {
 
                     message.reply({ 
                         content: '❌ Hubo un error al ejecutar el comando.',
-                        ephemeral: true 
+                        flags: 64 
                     });
                 }
             }

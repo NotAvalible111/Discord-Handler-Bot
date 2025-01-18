@@ -3,7 +3,7 @@ module.exports = {
     async execute(interaction) {
         await interaction.reply({
             content: '¡Has pulsado el botón! 🎉',
-            ephemeral: true
+            flags: 64
         });
     }
 };

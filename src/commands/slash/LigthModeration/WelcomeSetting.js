@@ -61,14 +61,14 @@ const {
   
         await interaction.reply({
           embeds: [embedExito],
-          ephemeral: true,
+          flags: 64,
         });
       } else if (subcommand === "eliminar") {
         let datosExistentes = await MensajeBienvenida.findOne({ guildId });
         if (!datosExistentes) {
           return await interaction.reply({
             content: "El sistema de mensajes de bienvenida aún no está configurado en este servidor",
-            ephemeral: true,
+            flags: 64,
           });
         }
   
@@ -80,7 +80,7 @@ const {
         await MensajeBienvenida.deleteOne({ guildId });
         await interaction.reply({
           embeds: [embedEliminado],
-          ephemeral: true,
+          flags: 64,
         });
       }
     },

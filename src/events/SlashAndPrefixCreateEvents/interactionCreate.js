@@ -78,7 +78,7 @@ module.exports = {
                     .setColor("Red")
                     .setDescription(`Hubo un error al ejecutar este comando!\n\`\`\`${error}\`\`\``)
 
-                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                await interaction.reply({ embeds: [errorEmbed], flags: 64 });
             }
         } else if (interaction.isButton()) {
             const button = interaction.client.buttons.get(interaction.customId);
@@ -97,14 +97,14 @@ module.exports = {
         
                 try {
                     if (interaction.replied || interaction.deferred) {
-                        await interaction.editReply({ embeds: [errorEmbed], ephemeral: true });
+                        await interaction.editReply({ embeds: [errorEmbed], flags: 64 });
                     } else {
-                        await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                        await interaction.reply({ embeds: [errorEmbed], flags: 64 });
                     }
                 } catch (followUpError) {
 
                     try {
-                        await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+                        await interaction.followUp({ embeds: [errorEmbed], flags: 64 });
                     } catch (finalError) {
                         console.error(`${color.red}[${getTimestamp()}] [CRITICAL_BUTTON_ERROR] No se pudo enviar mensaje de error:`, finalError);
                     }
