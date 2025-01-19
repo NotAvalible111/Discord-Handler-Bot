@@ -3,7 +3,7 @@ module.exports = (db) => {
     // Crtl + C
     process.on('SIGINT', () => {
         console.log();
-        error('ONI-CHAN, APAGANDO TODO UWU...');
+        error('APAGANDO SISTEMAS...');
         process.exit();
     });
 

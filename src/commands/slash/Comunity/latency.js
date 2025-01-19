@@ -7,61 +7,58 @@ module.exports = {
     
     category: "comunidad",
     
-    async execute(interaction) {
-        const embed = new EmbedBuilder()
-            .setAuthor({ name: `Latencia del Bot` })
-            .setTitle(`Prueba de latencia`)
-            .setDescription(`**\`🍯 LATENCIA: ${interaction.client.ws.ping} ms\`**`)
-            .setColor("Aqua")
-            .setThumbnail(interaction.client.user.displayAvatarURL())
-            .setFooter({ text: `Solicitado por ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({ dynamic: true })})
-            .setTimestamp();
+    async execute(interaction, client) {
+        try {
+            const embed = new EmbedBuilder()
+                .setAuthor({ name: `Latencia del Bot ${interaction.client.config.devBy}`})
+                .setTitle(`Prueba de latencia ${interaction.client.config.arrowEmoji}`)
+                .setDescription(`**\`🍯 LATENCIA: ${interaction.client.ws.ping} ms\`**`)
+                .setColor("Aqua")
+                .setThumbnail(interaction.client.user.displayAvatarURL())
+                .setFooter({ text: `Solicitado por ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({ dynamic: true })})
+                .setTimestamp();
 
-        const btn = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId('refresh-latency')
-                    .setStyle(ButtonStyle.Primary)
-                    .setLabel('Refresh')
-            );
+            const refreshButton = new ButtonBuilder()
+                .setCustomId('refresh-latency')
+                .setLabel('Actualizar')
+                .setStyle(ButtonStyle.Primary);
 
-        const response = await interaction.reply({ 
-            embeds: [embed], 
-            components: [btn],
-            fetchReply: true 
-        });
+            const row = new ActionRowBuilder()
+                .addComponents(refreshButton);
 
-        const collector = response.createMessageComponentCollector({ 
-            time: 60000 // El collector durará 60 segundos
-        });
-
-        collector.on('collect', async i => {
-            if (i.customId === 'refresh-latency') {
-                const newEmbed = new EmbedBuilder()
-                    .setAuthor({ name: `Latencia del Bot` })
-                    .setTitle(`Prueba de latencia`)
-                    .setDescription(`**\`🍯 LATENCIA: ${i.client.ws.ping} ms\`**`)
-                    .setColor("Blue")
-                    .setThumbnail(i.client.user.displayAvatarURL())
-                    .setFooter({ text: `Solicitado por ${i.user.tag}`, iconURL: i.user.displayAvatarURL({ dynamic: true })})
-                    .setTimestamp();
-
-                await i.update({ 
-                    embeds: [newEmbed], 
-                    components: [btn] 
-                });
+            if (!interaction.client.buttons) {
+                interaction.client.buttons = new Map();
             }
-        });
+            
+            interaction.client.buttons.set('refresh-latency', {
+                execute: async (btnInteraction) => {
+                    const newEmbed = new EmbedBuilder()
+                        .setAuthor({ name: `Latencia del Bot ${interaction.client.config.devBy}` })
+                        .setTitle(`Prueba de latencia ${interaction.client.config.arrowEmoji}`)
+                        .setDescription(`**\`🍯 LATENCIA: ${btnInteraction.client.ws.ping} ms\`**`)
+                        .setColor("Blue")
+                        .setThumbnail(btnInteraction.client.user.displayAvatarURL())
+                        .setFooter({ text: `Solicitado por ${btnInteraction.user.tag}`, iconURL: btnInteraction.user.displayAvatarURL({ dynamic: true })})
+                        .setTimestamp();
 
-        collector.on('end', () => {
-            if (!response.deleted) {
-                const disabledBtn = new ActionRowBuilder()
-                    .addComponents(
-                        ButtonBuilder.from(btn.components[0])
-                            .setDisabled(true)
-                    );
-                response.edit({ components: [disabledBtn] }).catch(() => {});
-            }
-        });
+                    await btnInteraction.update({
+                        embeds: [newEmbed],
+                        components: [row]
+                    });
+                }
+            });
+
+            await interaction.reply({
+                embeds: [embed],
+                components: [row]
+            });
+
+        } catch (error) {
+            console.error('Error en el comando de latencia:', error);
+            await interaction.reply({
+                content: 'Hubo un error al ejecutar el comando.',
+                ephemeral: true
+            });
+        }
     }
 };
