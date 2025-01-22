@@ -24,7 +24,6 @@ async function loadSlashCommands(client) {
                 const stat = fs.statSync(filePath);
                 
                 if (stat.isDirectory()) {
-
                     readCommands(filePath, file);
                 } else if (file.endsWith('.js')) {
                     total++;
@@ -61,10 +60,10 @@ async function loadSlashCommands(client) {
         readCommands(commandsPath);
 
         const rest = new REST().setToken(process.env.token);
-        console.log(`${color.green}[${getTimestamp()}]\nRegistrando comandos slash...`);
+        console.log(`${color.green}[${getTimestamp()}]\nRegistrando comandos slash globalmente...`);
         
         await rest.put(
-            Routes.applicationGuildCommands(process.env.clientid, process.env.guildid),
+            Routes.applicationCommands(process.env.clientid),
             { body: commands }
         );
 
@@ -72,7 +71,12 @@ async function loadSlashCommands(client) {
         console.log(`${color.blue}[${getTimestamp()}] Total de comandos slash cargados: ${success}/${total}`);
         
         console.log(`${color.green}[${getTimestamp()}] [COMMANDS] Loaded ${success} SlashCommands`);
-        console.log(`${color.green}[${getTimestamp()}] ¡Comandos slash registrados exitosamente!\n`);
+        console.log(`${color.green}[${getTimestamp()}] ¡Comandos slash registrados globalmente!\n`);
+        
+        const registeredCommands = await rest.get(
+            Routes.applicationCommands(process.env.clientid)
+        );
+        console.log(`${color.blue}[${getTimestamp()}] Comandos registrados en Discord: ${registeredCommands.length}`);
         
     } catch (error) {
         console.error(`${color.red}[${getTimestamp()}] Error al registrar los comandos slash:`, error);

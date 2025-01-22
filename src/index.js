@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, EmbedBuilder, REST, Routes } = require('discord.js');
 const { connectDatabase } = require('./database/conection.js');
 const { loadEvents } = require('./handlers/eventHandler.js');
 const { loadSlashCommands } = require('./handlers/slashCommandHandler.js');

@@ -17,7 +17,7 @@ module.exports = {
             .setStyle(ButtonStyle.Primary);
 
         const row = new ActionRowBuilder()
-            .addComponents(button);
+            .addComponents(butto);
 
         await interaction.reply({
             content: '¡Hola! Este es un comando de prueba. Prueba el botón:',

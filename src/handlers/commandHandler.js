@@ -1,83 +1,75 @@
+const { REST } = require("@discordjs/rest");
+const { Routes } = require('discord-api-types/v10');
 const fs = require('fs');
-const path = require('path');
-const { REST, Routes, Collection } = require('discord.js');
-const { color, getTimestamp } = require('../utils/loggingEffects.js');
+const ascii = require("ascii-table");
+const table = new ascii().setHeading("File Name", "Status");
 
-async function loadCommands(client) {
-   client.commands = client.commands || new Collection();
-   const commands = [];
-   
-   const commandsPath = path.join(__dirname, '../commands');
-   
-   try {
-       if (!fs.existsSync(commandsPath)) {
-           console.error(`${color.red}[${getTimestamp()}] El directorio ${commandsPath} no existe`);
-           return;
-       }
+const clientId = process.env.clientid; 
+const guildId = process.env.guildid; 
 
-       console.log(`${color.yellow}[${getTimestamp()}] Cargando comandos...`);
-       
-       const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+module.exports = (client) => {
+    client.handleCommands = async (commandFolders, path) => {
+        client.commandArray = [];
+        for (folder of commandFolders) {
+            const commandFiles = fs.readdirSync(`${path}/${folder}`).filter(file => file.endsWith('.js'));
+            for (const file of commandFiles) {
+                const command = require(`../commands/slash/${folder}/${file}`);
+                client.commands.set(command.data.name, command);
+                client.commandArray.push(command.data.toJSON());
 
-       client.commands.clear();
+                if (command.name) {
+                    client.commands.set(command.name, command);
+                    table.addRow(file, "Loaded");
+                } else {
+                    table.addRow(file, "Loaded");
+                    continue;
+                }
+            }
+        }
 
-       for (const file of commandFiles) {
-           try {
-               const filePath = path.join(commandsPath, file);
-               delete require.cache[require.resolve(filePath)];
-               const command = require(filePath);
+        const color = {
+            red: '\x1b[31m',
+            orange: '\x1b[38;5;202m',
+            yellow: '\x1b[33m',
+            green: '\x1b[32m',
+            blue: '\x1b[34m',
+            reset: '\x1b[0m'
+        }
 
-               if ('data' in command && 'execute' in command) {
-                   client.commands.set(command.data.name, command);
-                   commands.commandArray.push(command.data.toJSON());
+        function getTimestamp() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+            const seconds = date.getSeconds();
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
 
-                   console.log(`${color.green}[${getTimestamp()}] ✓ Comando cargado: ${command.data.name}`);
-               } else {
-                   client.commandArray.push(command.data);
-                   console.log(`${color.red}[${getTimestamp()}] ✗ El comando ${file} no tiene las propiedades requeridas`);
-               }
-           } catch (error) {
-               console.error(`${color.red}[${getTimestamp()}] Error al cargar el comando ${file}:`, error);
-           }
-       }
+        console.log(`${color.blue}${table.toString()} \n[${getTimestamp()}] ${color.reset}[COMMANDS] Cargando ${client.commands.size} SlashCommands.`);
 
-       const rest = new REST().setToken(process.env.token);
-       
-       console.log(`${color.yellow}[${getTimestamp()}] Registrando comandos en Discord...`);
+        const rest = new REST({
+            version: '9'
+        }).setToken(process.env.token);
 
-       await rest.put(
-           Routes.applicationGuildCommands(process.env.clientid, process.env.guildid),
-           { body: commands }
-       );
+        (async () => {
+            try {
+                client.logs.info(`[FUNCTION] Started refreshing application (/) commands.`);
 
-       console.log(`${color.green}[${getTimestamp()}] ¡${commands.length} comandos registrados exitosamente!`);
+                await rest.put(
+                    Routes.applicationCommands(clientId), {
+                        body: client.commandArray
+                    },
+                ).catch((error) => {
+                    console.error(`${color.red}[${getTimestamp()}] [FUNCTION] Error al actualizar los comandos de aplicación (/). \n${color.red}[${getTimestamp()}] [FUNCTION] Comprueba si tu clientID es correcto y coincide con tu token de tu bot:`, error);
+                });
 
-       fs.watch(commandsPath, async (eventType, filename) => {
-           if (filename && filename.endsWith('.js')) {
-               console.log(`${color.yellow}[${getTimestamp()}] \nDetectado cambio en ${filename}, recargando comandos...`);
-               await loadCommands(client);
-           }
-       });
-
-   } catch (error) {
-       console.error(`${color.red}[${getTimestamp()}] Error al procesar comandos:`, error);
-       throw error; 
-   }
-}
-
-async function checkCommands(client) {
-   try {
-       const rest = new REST().setToken(process.env.token);
-       const registeredCommands = await rest.get(
-           Routes.applicationGuildCommands(process.env.clientid, process.env.guildid)
-       );
-       
-       console.log(`${color.blue}[${getTimestamp()}] Estado actual: ${registeredCommands.length} comandos registrados`);
-       return registeredCommands;
-   } catch (error) {
-       console.error(`${color.red}[${getTimestamp()}] Error al verificar comandos:`, error);
-       return [];
-   }
-}
-
-module.exports = { loadCommands, checkCommands };
+                client.logs.success(`[FUNCTION] Restablecido con éxito la aplicación (/) comandos.`);
+            } catch (error) {
+                console.error(error);
+                client.logs.error('[FUNCTION] Error al cargar comandos de barra.', error);
+            }
+        })();
+    };
+};
