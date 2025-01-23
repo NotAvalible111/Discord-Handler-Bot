@@ -5,8 +5,10 @@ const { loadEvents } = require('./handlers/eventHandler.js');
 const { loadSlashCommands } = require('./handlers/slashCommandHandler.js');
 const { loadPrefixCommands } = require('./handlers/prefixCommandHandler.js');
 const { loadButtons } = require('./handlers/buttonHandler.js');
-const listenerManager = require('./utils/listenerManager');
 const { color, getTimestamp } = require('./utils/loggingEffects.js');
+
+const EventEmitter = require('events');
+EventEmitter.defaultMaxListeners = 15; 
 
 // Intents & Partials //
 
@@ -63,7 +65,6 @@ async function initializeBot() {
         console.log('\n╚═══════════════════════════════════════════╝');
 
         client.on('ready', () => {
-            listenerManager.initialize(client);
           
           client.on('messageCreate', async (message) => {
             
