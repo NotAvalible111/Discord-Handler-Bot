@@ -47,7 +47,7 @@ module.exports = (client) => {
             return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
         }
 
-        console.log(`${color.blue}${table.toString()} \n[${getTimestamp()}] ${color.reset}[COMMANDS] Cargando ${client.commands.size} SlashCommands.`);
+        console.log(`${color.blue}${table.toString()} \n[${getTimestamp()}] ${color.reset}[COMMANDS] Loaded ${client.commands.size} SlashCommands.`);
 
         const rest = new REST({
             version: '9'
@@ -62,13 +62,13 @@ module.exports = (client) => {
                         body: client.commandArray
                     },
                 ).catch((error) => {
-                    console.error(`${color.red}[${getTimestamp()}] [FUNCTION] Error al actualizar los comandos de aplicación (/). \n${color.red}[${getTimestamp()}] [FUNCTION] Comprueba si tu clientID es correcto y coincide con tu token de tu bot:`, error);
+                    console.error(`${color.red}[${getTimestamp()}] [FUNCTION] Error while refreshing application (/) commands. \n${color.red}[${getTimestamp()}] [FUNCTION] Check if your clientID is correct and matches your bots token:`, error);
                 });
 
-                client.logs.success(`[FUNCTION] Restablecido con éxito la aplicación (/) comandos.`);
+                client.logs.success(`[FUNCTION] Successfully reloaded application (/) commands.`);
             } catch (error) {
                 console.error(error);
-                client.logs.error('[FUNCTION] Error al cargar comandos de barra.', error);
+                client.logs.error('[FUNCTION] Error loading slash commands.', error);
             }
         })();
     };
