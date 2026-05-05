@@ -3,7 +3,7 @@ module.exports = {
     description: 'Repite el mensaje del usuario',
     execute(message, args) {
         if (!args.length) {
-            return message.reply('¡Necesitas proporcionar un mensaje!');
+            return message.reply('¡Necesitas proporcionar primero un mensaje!');
         }
         message.channel.send(args.join(' '));
     }
